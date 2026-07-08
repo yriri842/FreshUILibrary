@@ -1,3 +1,11 @@
+-- Fresh UI Library
+-- all animations use TweenService
+-- usage:
+--   local Fresh = loadstring(...)()
+--   local Window = Fresh:CreateWindow({ Title = "My Window" })
+--   local Tab = Window:CreateTab("Tab Name")
+--   Tab:CreateButton({ Title = "Button", Subhead = "Info", Callback = function() end })
+
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -6,6 +14,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
+-- constants
 local ACCENT_COLOR = Color3.fromRGB(0, 171, 128)
 local BG_MAIN = Color3.fromRGB(0, 0, 0)
 local BG_TOPBAR = Color3.fromRGB(16, 16, 16)
@@ -16,9 +25,11 @@ local FONT_MEDIUM = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.Fo
 local FONT_REGULAR = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 local FONT_VALUE = Font.new("rbxasset://fonts/families/Nunito.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
 
-local TWEEN_INFO = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingOut)
-local TWEEN_FAST = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingOut)
+-- tween settings
+local TWEEN_INFO = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local TWEEN_FAST = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
+-- helper functions
 local function Tween(obj, props, info)
     local t = TweenService:Create(obj, info or TWEEN_INFO, props)
     t:Play()
@@ -53,7 +64,7 @@ local function Padding(parent, l, r, t, b)
     })
 end
 
---// Library
+-- library
 local Fresh = {}
 Fresh.__index = Fresh
 
@@ -62,9 +73,11 @@ function Fresh:CreateWindow(config)
     local windowTitle = config.Title or "Fresh UI Library"
     local status = config.Status or "Version : 1.0.0 | Status: Idle"
 
+    -- clean up old instance
     local existing = PlayerGui:FindFirstChild("FreshUILibrary")
     if existing then existing:Destroy() end
 
+    -- screen gui
     local ScreenGui = Create("ScreenGui", {
         Name = "FreshUILibrary",
         ResetOnSpawn = false,
@@ -79,6 +92,7 @@ function Fresh:CreateWindow(config)
         end
     end)
 
+    -- main frame
     local Main = Create("Frame", {
         Name = "Main",
         ZIndex = 0,
@@ -90,6 +104,7 @@ function Fresh:CreateWindow(config)
     })
     Corner(5, Main)
 
+    -- drop shadow
     local DropShadowHolder = Create("Frame", {
         Name = "DropShadowHolder",
         ZIndex = -1,
@@ -114,6 +129,7 @@ function Fresh:CreateWindow(config)
         Parent = DropShadowHolder
     })
 
+    -- topbar
     local TopBar = Create("Frame", {
         Name = "TopBar",
         BorderSizePixel = 0,
@@ -147,6 +163,7 @@ function Fresh:CreateWindow(config)
     })
     Padding(Title, 10)
 
+    -- topbar buttons
     local ExitBtn = Create("ImageLabel", {
         Name = "ExitBtn",
         BorderSizePixel = 0,
@@ -178,6 +195,7 @@ function Fresh:CreateWindow(config)
         Parent = TopBar
     })
 
+    -- hover effect for topbar buttons
     local function ButtonHover(btn)
         btn.MouseEnter:Connect(function()
             Tween(btn, { ImageTransparency = 0.3 }, TWEEN_FAST)
@@ -187,9 +205,9 @@ function Fresh:CreateWindow(config)
         end)
     end
 
+    -- navigation
     local Navigation = Create("Frame", {
         Name = "Navigation",
-        SizeConstraint = Enum.SizeConstraint.RelativeYY,
         BorderSizePixel = 0,
         BackgroundColor3 = BG_NAV,
         ClipsDescendants = true,
@@ -221,7 +239,6 @@ function Fresh:CreateWindow(config)
         Name = "ButtonHolderScrollingFrame",
         BorderSizePixel = 0,
         CanvasSize = UDim2.new(0, 0, 0, 0),
-        Name = "ButtonHolderScrollingFrame",
         Selectable = false,
         AutomaticCanvasSize = Enum.AutomaticSize.Y,
         Size = UDim2.new(1, 0, 1, 0),
@@ -252,6 +269,7 @@ function Fresh:CreateWindow(config)
     })
     Padding(StatusLabel, 10, 0, 0, 2)
 
+    -- content container
     local ContentContainer = Create("Frame", {
         Name = "ContentContainer",
         BorderSizePixel = 0,
@@ -264,7 +282,7 @@ function Fresh:CreateWindow(config)
         Parent = Main
     })
 
-    --// Resizer
+    -- resizer
     local Resizer = Create("TextButton", {
         Name = "Resizer",
         Active = true,
@@ -281,6 +299,7 @@ function Fresh:CreateWindow(config)
         Parent = Main
     })
 
+    -- window object
     local Window = {}
     Window.Tabs = {}
     Window.CurrentTab = nil
@@ -288,11 +307,12 @@ function Fresh:CreateWindow(config)
     Window.Maximized = false
     Window.NavButtons = {}
 
+    -- topbar button hovers
     ButtonHover(ExitBtn)
     ButtonHover(MaximizeBtn)
     ButtonHover(MinimizeBtn)
 
-    -- drag
+    -- dragging
     do
         local dragging, dragInput, dragStart, startPos
         TopBar.Active = true
@@ -326,7 +346,7 @@ function Fresh:CreateWindow(config)
         end)
     end
 
-    --resize
+    -- resize
     do
         local resizing, resizeStart, startSize
         local MIN_SIZE = Vector2.new(400, 250)
@@ -356,8 +376,7 @@ function Fresh:CreateWindow(config)
 
     -- minimize
     local savedSize = Main.Size
-    MinimizeBtn.MouseButton1Click = nil
-    Create("TextButton", { -- görünmez tıklama alanı
+    Create("TextButton", {
         BackgroundTransparency = 1,
         Text = "",
         Size = UDim2.new(1, 0, 1, 0),
@@ -378,7 +397,7 @@ function Fresh:CreateWindow(config)
         end
     end)
 
-    --// maximize
+    -- maximize
     local preMaxSize, preMaxPos
     Create("TextButton", {
         BackgroundTransparency = 1,
@@ -415,7 +434,7 @@ function Fresh:CreateWindow(config)
         end)
     end)
 
-    -- opening anim
+    -- open animation
     Main.Size = UDim2.new(0, 0, 0, 0)
     Main.Position = UDim2.new(0.5, 0, 0.5, 0)
     Tween(Main, {
@@ -423,7 +442,7 @@ function Fresh:CreateWindow(config)
         Position = UDim2.new(0.5, -300, 0.5, -200)
     }, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out))
 
-    -- tab choose
+    -- select tab
     function Window:SelectTab(tab)
         for _, t in ipairs(self.Tabs) do
             if t == tab then
@@ -445,11 +464,10 @@ function Fresh:CreateWindow(config)
     function Window:CreateTab(name)
         name = name or "Tab"
 
-        --navigation btn
+        -- navigation button
         local NavButton = Create("ImageLabel", {
             Name = "NavButton",
             Active = true,
-            SizeConstraint = Enum.SizeConstraint.RelativeXX,
             BorderSizePixel = 0,
             ImageTransparency = 1,
             Image = "rbxassetid://15095614794",
@@ -458,7 +476,6 @@ function Fresh:CreateWindow(config)
             Selectable = true,
             Parent = NavScroll
         })
-        NavButton.SizeConstraint = Enum.SizeConstraint.None
         Corner(4, NavButton)
         Padding(NavButton, 5, 0, 5, 5)
 
@@ -489,6 +506,7 @@ function Fresh:CreateWindow(config)
         })
         Corner(4, Selected)
 
+        -- content page
         local Page = Create("ScrollingFrame", {
             Name = name .. "Tab",
             BorderSizePixel = 0,
@@ -515,6 +533,7 @@ function Fresh:CreateWindow(config)
         Tab.Selected = Selected
         Tab.Page = Page
 
+        -- navigation button animations
         local isSelected = function() return Window.CurrentTab == Tab end
         NavButton.MouseEnter:Connect(function()
             if not isSelected() then
@@ -536,7 +555,8 @@ function Fresh:CreateWindow(config)
         end)
 
         table.insert(Window.Tabs, Tab)
-    
+
+        -- base element builder
         local function CreateBaseElement(height)
             local Frame = Create("Frame", {
                 BorderSizePixel = 0,
@@ -560,6 +580,7 @@ function Fresh:CreateWindow(config)
             return Frame, Background
         end
 
+        -- hover and click transparency animation
         local function BindHover(clickable, background)
             clickable.MouseEnter:Connect(function()
                 Tween(background, { ImageTransparency = 0.75 }, TWEEN_FAST)
@@ -581,9 +602,10 @@ function Fresh:CreateWindow(config)
             end)
         end
 
+        -- title and subhead builder
         local function CreateTitles(parent, titleText, subheadText, widthOffset)
             widthOffset = widthOffset or -30
-            local Title = Create("TextLabel", {
+            local TitleLbl = Create("TextLabel", {
                 Name = "Title",
                 BorderSizePixel = 0,
                 TextXAlignment = Enum.TextXAlignment.Left,
@@ -595,8 +617,8 @@ function Fresh:CreateWindow(config)
                 Text = titleText or "Title",
                 Parent = parent
             })
-            Padding(Title, 5)
-            local Subhead = Create("TextLabel", {
+            Padding(TitleLbl, 5)
+            local SubheadLbl = Create("TextLabel", {
                 Name = "Subhead",
                 BorderSizePixel = 0,
                 TextXAlignment = Enum.TextXAlignment.Left,
@@ -609,16 +631,16 @@ function Fresh:CreateWindow(config)
                 Text = subheadText or "",
                 Parent = parent
             })
-            Padding(Subhead, 5)
-            return Title, Subhead
+            Padding(SubheadLbl, 5)
+            return TitleLbl, SubheadLbl
         end
 
-        -- btn
+        -- button
         function Tab:CreateButton(cfg)
             cfg = cfg or {}
             local Frame, Background = CreateBaseElement(40)
 
-            local ButtonHolderLabel = Create("TextLabel", {
+            local ButtonLabel = Create("TextLabel", {
                 Name = "Button",
                 BorderSizePixel = 0,
                 TextTransparency = 1,
@@ -628,9 +650,9 @@ function Fresh:CreateWindow(config)
                 Text = "",
                 Parent = Frame
             })
-            local Title, Subhead = CreateTitles(ButtonHolderLabel, cfg.Title, cfg.Subhead, -30)
+            local TitleLbl, SubheadLbl = CreateTitles(ButtonLabel, cfg.Title, cfg.Subhead, -30)
 
-            local Icon = Create("ImageLabel", {
+            Create("ImageLabel", {
                 Name = "Icon",
                 BorderSizePixel = 0,
                 Image = cfg.Icon or "rbxassetid://107598224139375",
@@ -640,7 +662,7 @@ function Fresh:CreateWindow(config)
                 Parent = Frame
             })
 
-            --// Tıklanabilir alan
+            -- clickable area
             local Clickable = Create("TextButton", {
                 BackgroundTransparency = 1,
                 Text = "",
@@ -655,8 +677,8 @@ function Fresh:CreateWindow(config)
             end)
 
             local ButtonObj = {}
-            function ButtonObj:SetTitle(t) Title.Text = t end
-            function ButtonObj:SetSubhead(t) Subhead.Text = t end
+            function ButtonObj:SetTitle(t) TitleLbl.Text = t end
+            function ButtonObj:SetSubhead(t) SubheadLbl.Text = t end
             return ButtonObj
         end
 
@@ -666,7 +688,7 @@ function Fresh:CreateWindow(config)
             local state = cfg.Default or false
 
             local Frame, Background = CreateBaseElement(40)
-            local Title, Subhead = CreateTitles(Frame, cfg.Title, cfg.Subhead, -100)
+            CreateTitles(Frame, cfg.Title, cfg.Subhead, -100)
 
             local ToggleBackground = Create("Frame", {
                 Name = "ToggleBackground",
@@ -736,9 +758,9 @@ function Fresh:CreateWindow(config)
         -- label
         function Tab:CreateLabel(cfg)
             cfg = cfg or {}
-            local Frame, Background = CreateBaseElement(40)
+            local Frame = CreateBaseElement(40)
 
-            local Title = Create("TextLabel", {
+            local TitleLbl = Create("TextLabel", {
                 Name = "Title",
                 TextWrapped = true,
                 BorderSizePixel = 0,
@@ -753,10 +775,10 @@ function Fresh:CreateWindow(config)
                 AutomaticSize = Enum.AutomaticSize.Y,
                 Parent = Frame
             })
-            Padding(Title, 4, 2, 2, 2)
+            Padding(TitleLbl, 4, 2, 2, 2)
 
             local LabelObj = {}
-            function LabelObj:SetText(t) Title.Text = t end
+            function LabelObj:SetText(t) TitleLbl.Text = t end
             return LabelObj
         end
 
@@ -770,8 +792,9 @@ function Fresh:CreateWindow(config)
             local value = default
 
             local Frame, Background = CreateBaseElement(40)
-            local Title, Subhead = CreateTitles(Frame, cfg.Title, cfg.Subhead, -175)
+            CreateTitles(Frame, cfg.Title, cfg.Subhead, -175)
 
+            -- value input
             local InputHolder = Create("Frame", {
                 Name = "InputHolder",
                 Active = true,
@@ -807,6 +830,7 @@ function Fresh:CreateWindow(config)
             Padding(Input, 4)
             Corner(3, Input)
 
+            -- slider bar
             local SliderBackground = Create("Frame", {
                 Name = "SliderBackground",
                 BorderSizePixel = 0,
@@ -871,6 +895,7 @@ function Fresh:CreateWindow(config)
             end
             function SliderObj:Get() return value end
 
+            -- drag logic
             local dragging = false
             local function inputToPct(input)
                 local rel = (input.Position.X - SliderBackground.AbsolutePosition.X) / SliderBackground.AbsoluteSize.X
@@ -901,6 +926,7 @@ function Fresh:CreateWindow(config)
                 end
             end)
 
+            -- input focus animation
             Input.Focused:Connect(function()
                 Tween(InputStroke, { Color = ACCENT_COLOR }, TWEEN_FAST)
             end)
@@ -915,6 +941,7 @@ function Fresh:CreateWindow(config)
                 end
             end)
 
+            -- hover
             SliderBackground.MouseEnter:Connect(function()
                 if not dragging then Tween(SliderStroke, { Color = ACCENT_COLOR }, TWEEN_FAST) end
             end)
@@ -922,14 +949,16 @@ function Fresh:CreateWindow(config)
                 if not dragging then Tween(SliderStroke, { Color = Color3.fromRGB(101, 101, 101) }, TWEEN_FAST) end
             end)
 
+            -- apply default value
             SliderObj:Set(default)
             return SliderObj
         end
 
+        -- textbox
         function Tab:CreateTextbox(cfg)
             cfg = cfg or {}
             local Frame, Background = CreateBaseElement(40)
-            local Title, Subhead = CreateTitles(Frame, cfg.Title, cfg.Subhead, -100)
+            CreateTitles(Frame, cfg.Title, cfg.Subhead, -100)
 
             local InputHolder = Create("Frame", {
                 Name = "InputHolder",
@@ -999,9 +1028,9 @@ function Fresh:CreateWindow(config)
             local currentKey = cfg.Default
             local binding = false
 
-            local Frame, Background = CreateBaseElement(40)
+            local Frame = CreateBaseElement(40)
 
-            local Icon = Create("ImageLabel", {
+            Create("ImageLabel", {
                 Name = "Icon",
                 BorderSizePixel = 0,
                 Image = "rbxassetid://117516602212921",
@@ -1011,7 +1040,7 @@ function Fresh:CreateWindow(config)
                 Parent = Frame
             })
 
-            local Title = Create("TextLabel", {
+            local TitleLbl = Create("TextLabel", {
                 Name = "Title",
                 BorderSizePixel = 0,
                 TextXAlignment = Enum.TextXAlignment.Left,
@@ -1024,9 +1053,9 @@ function Fresh:CreateWindow(config)
                 Text = cfg.Title or "Title",
                 Parent = Frame
             })
-            Padding(Title, 5)
+            Padding(TitleLbl, 5)
 
-            local Subhead = Create("TextLabel", {
+            local SubheadLbl = Create("TextLabel", {
                 Name = "Subhead",
                 BorderSizePixel = 0,
                 TextXAlignment = Enum.TextXAlignment.Left,
@@ -1039,7 +1068,7 @@ function Fresh:CreateWindow(config)
                 Text = cfg.Subhead or "",
                 Parent = Frame
             })
-            Padding(Subhead, 5)
+            Padding(SubheadLbl, 5)
 
             local KeyBackground = Create("Frame", {
                 Name = "KeyBackground",
@@ -1100,6 +1129,7 @@ function Fresh:CreateWindow(config)
             return KeybindObj
         end
 
+        -- auto select first tab
         if #Window.Tabs == 1 then
             Window:SelectTab(Tab)
         end
